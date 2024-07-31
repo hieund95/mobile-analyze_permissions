@@ -18,6 +18,8 @@ DANGEROUS_PERMISSIONS = {
     "android.permission.READ_SMS": "Limit this permission unless the app needs to process SMS for authentication or specific services.",
 }
 
+DEFAULT_RECOMMENDATION = "Review this permission to ensure it is absolutely necessary and inform the user clearly why it is needed."
+
 def analyze_permissions(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         lines = file.readlines()
@@ -31,21 +33,21 @@ def analyze_permissions(file_path):
         elif "granted permissions" in line:
             current_list = granted_permissions
         elif "android.permission" in line:
-            permission = line.strip()
+            permission = line.strip().split(':')[0]  # Split to handle granted permissions format
             if current_list is not None:
                 current_list.append(permission)
     
     print("Requested Permissions:")
     for perm in requested_permissions:
         print(f"  {perm}")
-        if perm in DANGEROUS_PERMISSIONS:
-            print(f"    Recommendation: {DANGEROUS_PERMISSIONS[perm]}")
+        recommendation = DANGEROUS_PERMISSIONS.get(perm, DEFAULT_RECOMMENDATION)
+        print(f"    Recommendation: {recommendation}")
     
     print("\nGranted Permissions:")
     for perm in granted_permissions:
         print(f"  {perm}")
-        if perm in DANGEROUS_PERMISSIONS:
-            print(f"    Recommendation: {DANGEROUS_PERMISSIONS[perm]}")
+        recommendation = DANGEROUS_PERMISSIONS.get(perm, DEFAULT_RECOMMENDATION)
+        print(f"    Recommendation: {recommendation}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze permissions from adb shell dumpsys output.")
